@@ -8,6 +8,38 @@
  * @position Component entry point; re-exported by /packages/core/src/index.ts
  */
 
+export {visitMarkdownNodes} from './ast';
+export type {
+  MarkdownAstPoint,
+  MarkdownAstDataValue,
+  MarkdownAstPosition,
+  MarkdownAstNodeBase,
+  MarkdownAstExtensionNode,
+  MarkdownAstText,
+  MarkdownAstInlineCode,
+  MarkdownAstInlineMath,
+  MarkdownAstLink,
+  MarkdownAstImage,
+  MarkdownAstCitation,
+  MarkdownAstBreak,
+  MarkdownAstPhrasingContent,
+  MarkdownAstHeading,
+  MarkdownAstParagraph,
+  MarkdownAstCode,
+  MarkdownAstMath,
+  MarkdownAstBlockquote,
+  MarkdownAstList,
+  MarkdownAstListItem,
+  MarkdownAstTable,
+  MarkdownAstTableRow,
+  MarkdownAstTableCell,
+  MarkdownAstThematicBreak,
+  MarkdownAstBlockContent,
+  MarkdownAstRoot,
+  MarkdownAstNodeMap,
+  MarkdownAstNode,
+} from './ast';
+
 export {Markdown} from './Markdown';
 export type {
   MarkdownProps,
@@ -35,5 +67,7 @@ export type {
   TableAlignment,
   ParseOptions,
   MathParseOptions,
+  IncrementalParseOptions,
+  IncrementalMathParseOptions,
   IncrementalState as IncrementalParseState,
 } from './parser';
