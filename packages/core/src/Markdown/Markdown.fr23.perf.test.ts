@@ -10,13 +10,11 @@
  * `Markdown.fr23.bench.ts` as a dedicated Node process, one section size at
  * a time, and only asserts on what that process reports.
  *
- * It has to work that way. The ratio is sensitive to two things a test
- * runner cannot hold still: other Vitest files competing for the machine,
- * and engine state — polymorphic call sites through the parser — left by
- * every other plugin configuration the worker already exercised. The same
- * code measured ~1.17 alone and up to ~1.54 beside the rest of the suite.
- * A fresh process with nothing else in it removes both, so the number the
- * budget is applied to reflects the helpers rather than the scheduler.
+ * A fresh process isolates engine state left by other plugin configurations,
+ * but it still shares CPU and memory with other Vitest workers. CI and Deploy
+ * exclude this file from the parallel UI suite, then run it alone after those
+ * workers exit, as the spec's isolated-process-and-runner protocol requires.
+ * Local measurements need the same isolation from other test and build work.
  *
  * The timed region inside that process is the spec's protocol, unsmoothed:
  * ten untimed warmups, then one median of nine alternating paired rounds,
@@ -29,6 +27,7 @@ import {mkdtempSync, rmSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {afterAll, describe, expect, it} from 'vitest';
+import {measureMarkdownPairedRatio} from './Markdown.fr23.sampling';
 
 interface BenchmarkResult {
   readonly sections: number;
@@ -135,6 +134,45 @@ function benchmarkArgv(sections: number): ReadonlyArray<string> {
 }
 
 describe('Markdown FR23 helper overhead', () => {
+  it('reports one nine-pair median without selecting the cheapest baseline', () => {
+    // Paired ratios: four 1.1s, one 1.2, four 10s. The median is 1.2,
+    // whereas dividing the separate medians would give 10. Later attempts
+    // have a cheaper baseline but a ratio of 2: selecting them biases the
+    // result even though the selector never inspects candidate times.
+    const baselineCosts = [1000, 1000, 1000, 1000, 10, 10, 10, 10, 10];
+    const candidateCosts = [1100, 1100, 1100, 1100, 12, 100, 100, 100, 100];
+    const calls: string[] = [];
+    let elapsed = 0;
+    const callback = (name: string, costs: ReadonlyArray<number>) => {
+      let count = 0;
+      return () => {
+        count++;
+        calls.push(name);
+        elapsed +=
+          count <= 10
+            ? 100
+            : (costs[Math.floor((count - 11) / 20)] ?? (name === 'B' ? 5 : 10));
+        return count;
+      };
+    };
+
+    expect(
+      measureMarkdownPairedRatio(
+        callback('B', baselineCosts),
+        callback('C', candidateCosts),
+        () => elapsed,
+      ),
+    ).toBeCloseTo(1.2, 10);
+    expect(calls).toHaveLength(2 * (10 + 9 * 20));
+    expect(calls.slice(0, 20).join('')).toBe('BC'.repeat(10));
+    for (let round = 0; round < 9; round++) {
+      const pair = ['B'.repeat(20), 'C'.repeat(20)];
+      expect(calls.slice(20 + round * 40, 60 + round * 40).join('')).toBe(
+        (round % 2 === 0 ? pair : pair.reverse()).join(''),
+      );
+    }
+  });
+
   it.each([200, 500])(
     'keeps the representative three-helper set within 25 percent of the empty pipeline at %i sections',
     sections => {
