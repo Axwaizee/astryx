@@ -1,3 +1,5 @@
+"use client";
+
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 import React, {useRef, useState, useId} from 'react';
