@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { HStack } from '../Stack';
-import { Selector } from '../Selector';
+import React, { useCallback, Ref } from 'react';
+import { TextInput } from '../TextInput';
+import type { BaseProps } from '../BaseProps';
 
-export interface MonthYearSelectorProps {
+export interface MonthYearSelectorProps extends BaseProps {
   /** The currently selected two-digit month (01-12) */
   selectedMonth: string;
   /** The currently selected four-digit year */
@@ -11,68 +11,50 @@ export interface MonthYearSelectorProps {
   onMonthChange: (value: string) => void;
   /** Callback fired when the year selection changes */
   onYearChange: (value: string) => void;
-  /** Starting year for the year dropdown. Defaults to 2020 */
-  startYear?: number;
-  /** Ending year for the year dropdown. Defaults to 2030 */
-  endYear?: number;
+  /** Forwarded ref */
+  ref?: Ref<HTMLInputElement>;
 }
 
-const MONTHS = [
-  { value: "01", label: "January" },
-  { value: "02", label: "February" },
-  { value: "03", label: "March" },
-  { value: "04", label: "April" },
-  { value: "05", label: "May" },
-  { value: "06", label: "June" },
-  { value: "07", label: "July" },
-  { value: "08", label: "August" },
-  { value: "09", label: "September" },
-  { value: "10", label: "October" },
-  { value: "11", label: "November" },
-  { value: "12", label: "December" },
-];
-
 /**
- * A composite component for selecting a month and a year.
+ * Native month and year selector.
  */
 export function MonthYearSelector({
   selectedMonth,
   selectedYear,
   onMonthChange,
   onYearChange,
-  startYear = 2020,
-  endYear = 2030,
+  ref,
+  ...baseProps
 }: MonthYearSelectorProps) {
+  const paddedMonth = selectedMonth.length === 1 ? `0${selectedMonth}` : selectedMonth;
+  const value = selectedYear && selectedMonth ? `${selectedYear}-${paddedMonth}` : '';
 
-  const YEARS = useMemo(() => {
-    return Array.from({ length: Math.max(0, endYear - startYear + 1) }, (_, i) => {
-      const yr = (startYear + i).toString();
-      return { value: yr, label: yr };
-    });
-  }, [startYear, endYear]);
+  const handleChange = useCallback((val: string) => {
+    if (val) {
+      const parts = val.split('-');
+      if (parts.length === 2) {
+        onYearChange(parts[0]);
+        onMonthChange(parts[1]);
+      }
+    } else {
+      onYearChange('');
+      onMonthChange('');
+    }
+  }, [onMonthChange, onYearChange]);
 
   return (
-    <HStack gap={2}>
-      <Selector
-        label="Month"
-        isLabelHidden
-        options={MONTHS}
-        value={selectedMonth}
-        onChange={onMonthChange}
-        width={140}
-        size="md"
-        variant="input"
-      />
-      <Selector
-        label="Year"
-        isLabelHidden
-        options={YEARS}
-        value={selectedYear}
-        onChange={onYearChange}
-        width={100}
-        size="md"
-        variant="input"
-      />
-    </HStack>
+    <TextInput
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      type={"month" as any}
+      value={value}
+      onChange={handleChange}
+      // eslint-disable-next-line @astryx/no-hardcoded-i18n-string
+      label="Month and Year"
+      isLabelHidden
+      size="md"
+      width={180}
+      ref={ref}
+      {...baseProps}
+    />
   );
 }
