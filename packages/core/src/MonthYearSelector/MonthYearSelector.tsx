@@ -13,36 +13,35 @@ import { themeProps } from '../utils/themeProps';
 // Reusing Astryx native field and input styles exactly like DateInput
 const styles = stylex.create({
   inputWrapper: {
-    display: 'flex',
-    position: 'relative',
-    alignItems: 'center',
+    height: sizeVars['--size-element-md'],
+    minWidth: 180,
     cursor: 'pointer',
   },
   iconButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
-    background: 'none',
-    border: 'none',
     padding: 0,
+    margin: 0,
+    borderWidth: 0,
+    borderStyle: 'none',
+    backgroundColor: 'transparent',
     cursor: 'pointer',
-    color: colorVars['--color-icon-secondary'],
+    borderRadius: radiusVars['--radius-element'],
   },
   input: {
+    display: 'block',
     flex: 1,
     minWidth: 0,
-    background: 'transparent',
-    border: 'none',
-    color: colorVars['--color-text-primary'],
+    borderWidth: 0,
+    borderStyle: 'none',
+    padding: 0,
+    fontFamily: 'inherit',
     fontSize: typeScaleVars['--text-body-size'],
-    height: sizeVars['--size-element-md'],
-    paddingInline: spacingVars['--spacing-0'],
-    paddingInlineEnd: spacingVars['--spacing-3'],
+    color: colorVars['--color-text-primary'],
+    backgroundColor: 'transparent',
     outline: 'none',
     cursor: 'pointer',
-    fontFamily: 'inherit',
     '::placeholder': {
       color: colorVars['--color-text-disabled'],
     },
@@ -226,7 +225,7 @@ export function MonthYearSelector({
         readOnly
         value={displayLabel}
         placeholder={placeholder}
-        {...stylex.props(styles.input, focusOutlineStyles.focusVisible)}
+        {...stylex.props(styles.input)}
       />
     </div>
   );
