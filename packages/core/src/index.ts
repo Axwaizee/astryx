@@ -180,3 +180,4 @@ export * from './theme';
 
 // Internationalization
 export * from './i18n';
+export * from './MonthYearSelector';
