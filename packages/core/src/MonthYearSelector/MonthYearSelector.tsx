@@ -24,6 +24,7 @@ export function MonthYearSelector({
   onMonthChange,
   onYearChange,
   ref,
+  onChange, // intercept from BaseProps to prevent spreading
   ...baseProps
 }: MonthYearSelectorProps) {
   const paddedMonth = selectedMonth.length === 1 ? `0${selectedMonth}` : selectedMonth;
